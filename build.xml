@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="LivraisonBN" default="run" basedir=".">
+
+    <!-- Définition des chemins -->
+    <property name="src.dir" value="src"/>
+    <property name="build.dir" value="build"/>
+    <property name="bin.dir" value="${build.dir}"/>
+    <property name="image.dir" value="src/image"/>
+    <property name="test.dir" value="test"/>
+    <property name="lib.dir" value="lib"/>
+    
+    
+    
+    <!-- Création des répertoires nécessaires -->
+    <target name="init">
+        <mkdir dir="${bin.dir}"/>
+        <mkdir dir="${bin.dir}/image"/>
+    </target>
+    
+    <!-- Compilation des fichiers sources -->
+    <target name="compile" depends="init">
+        <javac srcdir="${src.dir}" destdir="${bin.dir}" includeantruntime="false"/>
+    </target>
+    
+    <!-- Copie de l'image spécifique dans le répertoire de sortie -->
+    <target name="copy-images" depends="compile">
+        <copy file="${image.dir}/Bataille.png" todir="${bin.dir}/image"/>
+        <echo message="Image Bataille.png copiée dans ${bin.dir}/image"/>
+    </target>
+    
+    <!-- Exécution de Main (interface graphique) -->
+    <target name="run" depends="copy-images">
+        <java classname="Main" fork="true" dir="${bin.dir}">
+            <classpath>
+                <pathelement path="${bin.dir}"/>
+            </classpath>
+        </java>
+    </target>
+
+    <!-- Exécution de Demo (mode terminal) -->
+    <target name="demo" depends="compile">
+        <echo message="Exécution en mode terminal..."/>
+        <java classname="model.Demo" fork="true" dir="${bin.dir}">
+            <classpath>
+                <pathelement path="${bin.dir}"/>
+            </classpath>
+        </java>
+    </target>
+    
+    <!-- Nettoyage des fichiers compilés -->
+    <target name="clean">
+        <delete dir="${build.dir}"/>
+    </target>
+    
+    
+            <!-- Génération de la documentation Javadoc -->
+    <target name="javadoc" description="Génère la documentation Javadoc">
+        <mkdir dir="doc"/>
+        <javadoc destdir="doc" sourcepath="${src.dir}">
+            <package name="controleur"/>
+            <package name="ecoute"/>
+            <package name="ecoute.notifications"/>
+            <package name="model"/>
+            <package name="vue"/>
+            <classpath>
+                <pathelement path="${bin.dir}"/>
+            </classpath>
+        </javadoc>
+        <echo message="Javadoc générée dans le dossier 'doc'."/>
+    </target>
+
+    
+    
+    <!-- Compilation des tests -->
+<target name="test-compile" depends="compile">
+    <mkdir dir="${build.dir}/test"/>
+    <javac srcdir="${test.dir}" destdir="${build.dir}/test" includeantruntime="false">
+        <classpath>
+            <pathelement path="${bin.dir}"/>
+            <fileset dir="${lib.dir}">
+                <include name="**/*.jar"/>
+            </fileset>
+        </classpath>
+    </javac>
+</target>
+
+<!-- Exécution des tests JUnit -->
+<target name="test" depends="test-compile">
+    <mkdir dir="${build.dir}/test-results"/>
+    <junit printsummary="true" haltonfailure="false" fork="true">
+        <classpath>
+            <pathelement path="${bin.dir}"/>
+            <pathelement path="${build.dir}/test"/> <!-- Chemin des classes de tests -->
+            <fileset dir="${lib.dir}">
+                <include name="**/*.jar"/>
+            </fileset>
+        </classpath>
+        <formatter type="plain"/>
+        <formatter type="xml"/>
+        <batchtest todir="${build.dir}/test-results">
+            <fileset dir="${test.dir}">
+                <include name="**/*Test.java"/>
+            </fileset>
+        </batchtest>
+    </junit>
+</target>
+
+    
+    
+    
+</project>
+
